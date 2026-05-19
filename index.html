@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Spinny Wheel.exe</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="pixel-bg" aria-hidden="true"></div>
+
+    <main class="app-shell">
+      <header class="masthead">
+        <p class="kicker">TRANSACTION ENRICHMENT SQUAD</p>
+        <h1 aria-label="Spinny Wheel dot exe">
+          <span>SPINNY</span>
+          <span>WHEEL.EXE</span>
+        </h1>
+        <div class="bad-sticker" aria-hidden="true">WOW!!</div>
+      </header>
+
+      <section class="machine" aria-label="Spinny wheel app">
+        <section class="input-zone" aria-labelledby="people-label">
+          <div class="label-row">
+            <label id="people-label" for="peopleInput">PEOPLE.TXT</label>
+            <span id="remainingCount" class="count-badge">0 LEFT</span>
+          </div>
+          <textarea
+            id="peopleInput"
+            spellcheck="false"
+            autocomplete="off"
+            aria-describedby="inputHelp"
+          ></textarea>
+          <p id="inputHelp" class="help-text">One name per line. Picks are removed from the wheel until reset.</p>
+
+          <div class="button-grid" aria-label="Wheel controls">
+            <button id="spinButton" class="mega-button" type="button">SPIN!!!!</button>
+            <button id="resetButton" type="button">RESET ROUND</button>
+            <button id="undoButton" type="button">UNDO PICK</button>
+            <button id="soundButton" type="button" aria-pressed="true">SOUND ON</button>
+          </div>
+        </section>
+
+        <section class="wheel-zone" aria-label="Wheel">
+          <div class="canvas-shell">
+            <canvas id="wheelCanvas" width="720" height="720" aria-label="Spinning wheel"></canvas>
+            <div class="pointer" aria-hidden="true"></div>
+          </div>
+          <aside id="targetAd" class="target-ad" aria-label="Sponsored transaction enrichment ad"></aside>
+        </section>
+      </section>
+    </main>
+
+    <div id="resultOverlay" class="result-overlay" hidden aria-live="assertive"></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
