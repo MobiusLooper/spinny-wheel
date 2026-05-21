@@ -268,6 +268,16 @@ const squadLore = [
   "EARNED INCOME DETECTION",
   "100K DISAMBIGUATED COUNTERPARTY INDEX",
   "BILLS RECALL IS SUSPICIOUSLY HIGH",
+  "OFFSET LAG ALERT HAS TWO NEW CONDITIONS",
+  "LOW-THROUGHPUT ASYNC ENRICHER ALERT",
+  "ENTIRE MEMORY USED BY SOME PODS",
+  "PR ENDPOINT IS FOR EVALUATION",
+  "FLEX PAYMENT SELF-TRANSFER?",
+  "AIRFLOW DEV MERGE CONFLICT",
+  "ML DIGEST ENDPOINT MEANS PROD TRAFFIC?",
+  "P95 LATENCY VS PARITY CHECK",
+  "WAY OF WORKING SESSION CONCLUSIONS",
+  "CLEO COUNTERPARTY EVAL NEEDS ORACLE LABELS",
   "ONWARDS",
   "NICE",
   "AMAZE",
@@ -277,59 +287,138 @@ const squadLore = [
 const targetedAds = [
   {
     eyebrow: "Sponsored",
-    target: "Sagar",
-    headline: "Backfills making lag go up?",
-    body: "Add pretend workers before lunch. Watch `tx/sec` look emotionally healthier in meetings.",
-    product: "CapacityGrid",
-    cta: "Estimate fake throughput"
+    target: "Josh",
+    headline: "Cleo counterparty precision looking too knowable?",
+    body: "LLMaaj Lens excludes employees, counts false negatives, and says 0.99 F1 with worrying confidence.",
+    product: "Counterparty Oracle Pro",
+    cta: "Score the Cleo bits",
+    lore: "CLEO COUNTERPARTY EVAL EXCLUDES EMPLOYEES"
   },
   {
     eyebrow: "Promoted",
     target: "Alberto",
-    headline: "Need it statistically the same, but not identical?",
-    body: "BaselineBuddy compares PR deploys against prod and produces one confident green-ish rectangle.",
+    headline: "Need it statistically the same, not identical?",
+    body: "BaselineBuddy gives challenger models a tiny 1k snack, then prints a green-ish rectangle for parity.",
     product: "BaselineBuddy",
-    cta: "Open challenger model"
+    cta: "Open challenger model",
+    lore: "STATISTICALLY SAME, NOT IDENTICAL"
+  },
+  {
+    eyebrow: "Recommended",
+    target: "Ana",
+    headline: "PR endpoint needed for evaluation?",
+    body: "FlyteFindr checks the VPN, finds the dashboard link, and gently reminds MLflow what domain it lives in.",
+    product: "FlyteFindr",
+    cta: "Locate dashboard",
+    lore: "PR ENDPOINT FOR EVALUATION"
+  },
+  {
+    eyebrow: "Sponsored result",
+    target: "Valentina",
+    headline: "Oracle labels delaying the Cleo counterparty eval?",
+    body: "FeedbackPipeline Plus aligns the validation layer, reruns TE1.0, and asks whether the LLM is even online.",
+    product: "OracleLabel Studio",
+    cta: "Label the dataset",
+    lore: "VALIDATION LAYER MATCHES THE NEW PROMPT"
+  },
+  {
+    eyebrow: "Sponsored",
+    target: "Orestis",
+    headline: "User embeddings missing life events?",
+    body: "StateClusterer spots income-loss vibes, raise-shaped clusters, and one Jira ticket that escaped the sprint.",
+    product: "Bruce Embeddings",
+    cta: "Cluster the humans",
+    lore: "USER EMBEDDINGS MAY KNOW ABOUT RAISES"
+  },
+  {
+    eyebrow: "Promoted",
+    target: "Raps",
+    headline: "Flatmate paid you half?",
+    body: "SplitCost-o-Matic links 50%, 33.3%, and 25% repayments so categories can net out dramatically.",
+    product: "SplitCost-o-Matic",
+    cta: "Submit hackathon idea",
+    lore: "SPLIT-COST PAYMENTS ARE SELF-TRANSFER-ISH"
+  },
+  {
+    eyebrow: "Recommended",
+    target: "Laurence",
+    headline: "Standup threatening to exceed 15 minutes?",
+    body: "CeremonyCompressor turns Notion backlog mist into Jira tickets and ships one bi-sprintly retro trial.",
+    product: "WaysOfWorking Turbo",
+    cta: "Tighten ceremony",
+    lore: "KEEP STANDUPS TIGHT TO 15 MINUTES"
   },
   {
     eyebrow: "Sponsored result",
     target: "Faraz",
-    headline: "Pods using entire memory?",
-    body: "Capacity Advisor compresses your async espresso services until Grafana looks less judgemental.",
-    product: "PodCapacity Advisor",
-    cta: "Shrink a pod"
+    headline: "Offset lag alert still too interesting?",
+    body: "AlertSmith adds low-range, long-range, low-throughput, and entire-memory dashboard anxiety.",
+    product: "AlertSmith",
+    cta: "Tune the threshold",
+    lore: "OFFSET LAG ALERT NEEDS LOW AND LONG RANGE"
   },
   {
     eyebrow: "Recommended",
     target: "Sam",
-    headline: "Prod DLQ obscured by test branches?",
-    body: "BranchBouncer adds a checklist, a tiny siren, and a velvet rope around `main`.",
-    product: "DeployGuard",
-    cta: "Fence off PR deploys"
+    headline: "Need another 10k users backfilled?",
+    body: "PartitionFiller asks for the worst, fills every partition, and remembers the prod DLQ checklist this time.",
+    product: "PartitionFiller",
+    cta: "Request more users",
+    lore: "ALL PARTITIONS MUST BE FULL"
+  },
+  {
+    eyebrow: "Sponsored",
+    target: "Pedro",
+    headline: "Parity check or p95 latency?",
+    body: "PerfProbe compares PR branches against prod and politely asks what kind of performance you meant.",
+    product: "PR Evaluation Tool",
+    cta: "Measure p95",
+    lore: "P95 LATENCY IS NOT THE WHOLE PARITY CHECK"
   },
   {
     eyebrow: "Sponsored",
     target: "Adriana",
     headline: "`max_decimal` says -1 again?",
-    body: "AvroTherapy turns schema feelings into precision-positive affirmations and one GitHub issue.",
+    body: "AvroTherapy removes custom DLQs, writes to espresso defaults, and opens exactly one package issue.",
     product: "SchemaSentry",
-    cta: "Validate my decimal"
+    cta: "Validate my decimal",
+    lore: "DATACLASSES-AVROSCHEMA ISSUE RAISED"
   },
   {
     eyebrow: "Promoted",
-    target: "Felipe",
-    headline: "Trace `raw_transaction` back to Plaid?",
-    body: "Breadcrumbs.io adds arrows, vibes, and a suspiciously specific event lineage diagram.",
-    product: "Breadcrumbs.io",
-    cta: "Find the plaid-ish thing"
+    target: "Alex",
+    headline: "Data sources hiding from dbt?",
+    body: "SourceMap Casino tracks Recurring Incomes, Bills, Accounts, and Logins before the T2 KR spreadsheet blinks.",
+    product: "SourceMap Casino",
+    cta: "Find source location",
+    lore: "DATA SOURCE LOCATIONS FOR BILLS AND INCOME"
+  },
+  {
+    eyebrow: "Promoted",
+    target: "Natalie",
+    headline: "Precision and recall swapped again?",
+    body: "MetricLibrarian files every retrieved transaction on the right shelf, including the suspicious flex payment.",
+    product: "MetricLibrarian",
+    cta: "Remember recall",
+    lore: "FLEX PAYMENT SELF-TRANSFER QUESTION"
   },
   {
     eyebrow: "Sponsored",
-    target: "Oriol",
-    headline: "Blank counterparty names ruining bills parity?",
-    body: "CounterpartyGlue fills the void with careful uncertainty and a button labelled probably.",
-    product: "Counterparty Studio",
-    cta: "Patch the blank"
+    target: "Edgar",
+    headline: "Airflow dev blocked by branch soup?",
+    body: "ConflictOmitter resolves `.gitignore`, checks Active Branches, and deploys before the digest notices.",
+    product: "Airflow Branch Bouncer",
+    cta: "Omit branch for now",
+    lore: "AIRFLOW DEV DEPLOY HAD A MERGE CONFLICT"
+  },
+  {
+    eyebrow: "Recommended",
+    target: "Marian",
+    headline: "Newsletter says endpoint. But endpoint?",
+    body: "DigestDecoder explains prod traffic, removes duplicate status words, and ships the ML weekly with less mystery.",
+    product: "DigestDecoder",
+    cta: "Decode endpoint",
+    lore: "ML DIGEST ENDPOINT MIGHT MEAN PROD TRAFFIC"
   }
 ];
 
@@ -1298,7 +1387,7 @@ function drawOuterPixels(cx, cy, radius, size) {
 function renderTargetedAd() {
   if (targetAdDismissed) return;
 
-  const ad = targetedAds[randomInt(targetedAds.length)];
+  const ad = chooseTargetedAd();
   targetAd.replaceChildren();
 
   const top = document.createElement("div");
@@ -1955,6 +2044,32 @@ function randomSendoffMessage() {
   return sendoffMessages[randomInt(sendoffMessages.length)];
 }
 
+function personKey(value) {
+  return normalizeName(value).toLocaleLowerCase();
+}
+
+function isAdForName(ad, name) {
+  const target = personKey(ad.target);
+  const person = personKey(name);
+  return person === target || person.startsWith(`${target} `);
+}
+
+function adForName(name) {
+  const matches = targetedAds.filter((ad) => isAdForName(ad, name));
+  return matches.length ? matches[randomInt(matches.length)] : null;
+}
+
+function loreForName(name) {
+  return adForName(name)?.lore || squadLore[randomInt(squadLore.length)];
+}
+
+function chooseTargetedAd() {
+  const roster = rosterFromInput();
+  const rosterAds = targetedAds.filter((ad) => roster.some((name) => isAdForName(ad, name)));
+  const choices = rosterAds.length ? rosterAds : targetedAds;
+  return choices[randomInt(choices.length)];
+}
+
 function showResultOverlay(name) {
   const variant = randomInt(5);
   const card = document.createElement("div");
@@ -1979,7 +2094,7 @@ function showResultOverlay(name) {
   subtitle.textContent = winnerPhrase(name);
 
   lore.className = "overlay-lore";
-  lore.textContent = squadLore[randomInt(squadLore.length)];
+  lore.textContent = loreForName(name);
 
   card.append(kicker, nameText, subtitle, lore);
 
