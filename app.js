@@ -654,7 +654,7 @@ function fitCanvas() {
   drawWheel(displayedWheelNames || getRemaining(), state.rotation);
 }
 
-function drawWheel(names, rotation, customSlices = null) {
+function drawWheel(names, rotation, customSlices = null, labelAnimation = null) {
   const size = canvasSize;
   const cx = size / 2;
   const cy = size / 2;
@@ -672,6 +672,8 @@ function drawWheel(names, rotation, customSlices = null) {
   }
 
   const drawScreenLockedLabels = labelProfile.mode === "screenLocked";
+  const drawCircularFinalLabel = slices.length === 1 && !labelAnimation;
+  const hiddenLabelIndexes = labelAnimation?.hiddenIndexes || null;
   ctx.save();
   ctx.translate(cx, cy);
   ctx.rotate(rotation);
@@ -697,7 +699,7 @@ function drawWheel(names, rotation, customSlices = null) {
     ctx.stroke();
 
     drawSliceCrud(labelIndex, start, end, radius, size);
-    if (!drawScreenLockedLabels && width > 0.035) {
+    if (!drawCircularFinalLabel && !drawScreenLockedLabels && width > 0.035 && !hiddenLabelIndexes?.has(index)) {
       drawSliceText(
         sliceDisplayLabel(name, slices.length, labelProfile),
         start + width / 2,
@@ -718,10 +720,42 @@ function drawWheel(names, rotation, customSlices = null) {
   ctx.strokeStyle = "#050505";
   ctx.stroke();
 
+  if (drawCircularFinalLabel) {
+    drawCircularWheelText(
+      sliceDisplayLabel(slices[0].name, slices.length, labelProfile),
+      radius,
+      size,
+      slices[0].labelIndex ?? 0
+    );
+  }
+
   ctx.restore();
 
-  if (drawScreenLockedLabels) {
-    drawScreenLockedSliceText(slices, rotation, cx, cy, radius, size, labelProfile);
+  if (drawScreenLockedLabels && !drawCircularFinalLabel) {
+    drawScreenLockedSliceText(
+      slices,
+      rotation,
+      cx,
+      cy,
+      radius,
+      size,
+      labelProfile,
+      hiddenLabelIndexes
+    );
+  }
+
+  if (labelAnimation) {
+    drawSwapLabelAnimation(
+      labelAnimation,
+      rotation,
+      cx,
+      cy,
+      radius,
+      size,
+      labelProfile,
+      drawScreenLockedLabels,
+      slices.length
+    );
   }
 
   drawHub(cx, cy, hubRadius, size);
@@ -1061,6 +1095,205 @@ function drawEmptyWheel(cx, cy, radius) {
   ctx.restore();
 }
 
+function shortestAngleDelta(fromAngle, toAngle) {
+  const delta = normalizeAngle(toAngle - fromAngle);
+  return delta > Math.PI ? delta - TAU : delta;
+}
+
+function drawWheelLabel(label, fontSize, maxWidth, size, fillStyle, alpha = 1) {
+  ctx.globalAlpha *= alpha;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = `900 ${fontSize}px Comic Sans MS, Arial Black, Impact, sans-serif`;
+  ctx.lineJoin = "round";
+  ctx.lineWidth = Math.max(5, size * 0.008);
+  ctx.strokeStyle = "#050505";
+  ctx.fillStyle = "#ffffff";
+  ctx.strokeText(label, 0, 0, maxWidth);
+  ctx.fillStyle = fillStyle;
+  ctx.fillText(label, 0, 0, maxWidth);
+}
+
+function textWidthForFont(label, fontSize) {
+  ctx.save();
+  ctx.font = `900 ${fontSize}px Comic Sans MS, Arial Black, Impact, sans-serif`;
+  const width = ctx.measureText(label).width;
+  ctx.restore();
+  return width;
+}
+
+function drawCircularWheelText(labelText, radius, size, index) {
+  const label = labelText.toUpperCase();
+  if (!label) return;
+
+  const ringRadius = radius * 0.68;
+  const maxArc = TAU * 0.9;
+  const maxFontSize = Math.max(18, Math.min(34, radius * 0.108));
+  const minFontSize = Math.max(12, Math.min(17, radius * 0.054));
+  const maxTextWidth = ringRadius * maxArc;
+  const measuredWidth = textWidthForFont(label, maxFontSize);
+  const fontSize = Math.max(
+    minFontSize,
+    Math.min(maxFontSize, maxFontSize * maxTextWidth / Math.max(1, measuredWidth))
+  );
+  const letterSpacing = Math.max(2.5, fontSize * 0.12);
+  const letters = Array.from(label);
+  const advances = letters.map((letter) => textWidthForFont(letter, fontSize) + letterSpacing);
+  const totalArc = Math.min(
+    maxArc,
+    advances.reduce((total, advance) => total + advance, 0) / ringRadius
+  );
+  let cursor = -Math.PI / 2 - totalArc / 2;
+
+  ctx.save();
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = `900 ${fontSize}px Comic Sans MS, Arial Black, Impact, sans-serif`;
+  ctx.lineJoin = "round";
+  ctx.lineWidth = Math.max(5, size * 0.008);
+  ctx.strokeStyle = "#050505";
+  ctx.fillStyle = index % 2 ? "#fffef4" : "#eadb67";
+
+  letters.forEach((letter, letterIndex) => {
+    const advance = advances[letterIndex] / ringRadius;
+    const angle = cursor + advance / 2;
+    cursor += advance;
+    if (letter === " ") return;
+
+    ctx.save();
+    ctx.translate(Math.cos(angle) * ringRadius, Math.sin(angle) * ringRadius);
+    ctx.rotate(angle + Math.PI / 2);
+    ctx.strokeText(letter, 0, 0);
+    ctx.fillText(letter, 0, 0);
+    ctx.restore();
+  });
+
+  ctx.restore();
+}
+
+function sliceLabelLayout(
+  sliceInfo,
+  index,
+  rotation,
+  cx,
+  cy,
+  radius,
+  size,
+  profile,
+  screenLocked,
+  sliceCount,
+  nameOverride = null
+) {
+  const labelIndex = sliceInfo.labelIndex ?? index;
+  const isFinalLabel = sliceCount === 1;
+  const label = sliceDisplayLabel(nameOverride ?? sliceInfo.name, sliceCount, profile).toUpperCase();
+  const fontSize = isFinalLabel
+    ? Math.max(15, Math.min(30, radius * 0.095))
+    : Math.max(11, Math.min(24, radius * sliceInfo.width * 0.24));
+  const maxWidth = isFinalLabel
+    ? Math.max(120, radius * 1.26)
+    : Math.max(42, radius * (screenLocked ? 0.76 : 0.78));
+  const angle = sliceInfo.start + sliceInfo.width / 2;
+  const fillStyle = (screenLocked ? index : labelIndex) % 2 ? "#fffef4" : "#eadb67";
+
+  if (screenLocked) {
+    const screenAngle = angle + rotation;
+    const distance = radius * (0.58 + profile.radiusShift + (labelPseudo(profile, labelIndex, 33) - 0.5) * 0.05);
+    const jitter = (labelPseudo(profile, labelIndex, 34) - 0.5) * 0.18;
+    const flip = labelPseudo(profile, labelIndex, 35) > 0.82 ? Math.PI : 0;
+    return {
+      label,
+      x: cx + Math.cos(screenAngle) * distance,
+      y: cy + Math.sin(screenAngle) * distance,
+      rotation: profile.alignedAngle + jitter + flip,
+      fontSize,
+      maxWidth,
+      fillStyle
+    };
+  }
+
+  const angleWobble = (labelPseudo(profile, labelIndex, 22) - 0.5) * profile.wobble;
+  const textRadius = radius * (
+    (isFinalLabel ? 0.52 : 0.57)
+    + profile.radiusShift
+    + (labelPseudo(profile, labelIndex, 23) - 0.5) * 0.06
+  );
+  const placementAngle = rotation + angle + angleWobble;
+  return {
+    label,
+    x: cx + Math.cos(placementAngle) * textRadius,
+    y: cy + Math.sin(placementAngle) * textRadius,
+    rotation: placementAngle + labelRotationForSlice(angle, labelIndex, profile),
+    fontSize,
+    maxWidth,
+    fillStyle
+  };
+}
+
+function drawSwapLabelAnimation(
+  animation,
+  rotation,
+  cx,
+  cy,
+  radius,
+  size,
+  profile,
+  screenLocked,
+  sliceCount
+) {
+  const progress = Math.max(0, Math.min(1, animation.progress));
+  const eased = easeInOutCubic(progress);
+  const lift = Math.sin(progress * Math.PI) * size * 0.018;
+
+  animation.items.forEach((item) => {
+    const fromLayout = sliceLabelLayout(
+      item.fromSlice,
+      item.fromIndex,
+      rotation,
+      cx,
+      cy,
+      radius,
+      size,
+      profile,
+      screenLocked,
+      sliceCount,
+      item.name
+    );
+    const toLayout = sliceLabelLayout(
+      item.toSlice,
+      item.toIndex,
+      rotation,
+      cx,
+      cy,
+      radius,
+      size,
+      profile,
+      screenLocked,
+      sliceCount,
+      item.name
+    );
+    const x = fromLayout.x + (toLayout.x - fromLayout.x) * eased;
+    const y = fromLayout.y + (toLayout.y - fromLayout.y) * eased - lift;
+    const labelRotation = fromLayout.rotation + shortestAngleDelta(fromLayout.rotation, toLayout.rotation) * eased;
+    const fontSize = fromLayout.fontSize + (toLayout.fontSize - fromLayout.fontSize) * eased;
+    const maxWidth = fromLayout.maxWidth + (toLayout.maxWidth - fromLayout.maxWidth) * eased;
+    const fillStyle = eased < 0.5 ? fromLayout.fillStyle : toLayout.fillStyle;
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(labelRotation);
+    drawWheelLabel(
+      fromLayout.label,
+      fontSize,
+      maxWidth,
+      size,
+      fillStyle,
+      0.86 + Math.sin(progress * Math.PI) * 0.14
+    );
+    ctx.restore();
+  });
+}
+
 function drawSliceText(labelText, angle, radius, slice, size, index, profile, isFinalLabel = false) {
   ctx.save();
   const angleWobble = (labelPseudo(profile, index, 22) - 0.5) * profile.wobble;
@@ -1083,16 +1316,7 @@ function drawSliceText(labelText, angle, radius, slice, size, index, profile, is
     ? Math.max(120, radius * 1.26)
     : Math.max(42, radius * 0.78);
 
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.font = `900 ${fontSize}px Comic Sans MS, Arial Black, Impact, sans-serif`;
-  ctx.lineJoin = "round";
-  ctx.lineWidth = Math.max(5, size * 0.008);
-  ctx.strokeStyle = "#050505";
-  ctx.fillStyle = "#ffffff";
-  ctx.strokeText(label, 0, 0, maxWidth);
-  ctx.fillStyle = index % 2 ? "#fffef4" : "#eadb67";
-  ctx.fillText(label, 0, 0, maxWidth);
+  drawWheelLabel(label, fontSize, maxWidth, size, index % 2 ? "#fffef4" : "#eadb67");
   ctx.restore();
 }
 
@@ -1112,11 +1336,20 @@ function labelRotationForSlice(angle, index, profile) {
   return Math.PI / 2 + profile.globalTilt * 0.3 + jitter;
 }
 
-function drawScreenLockedSliceText(slices, rotation, cx, cy, radius, size, profile) {
+function drawScreenLockedSliceText(
+  slices,
+  rotation,
+  cx,
+  cy,
+  radius,
+  size,
+  profile,
+  hiddenLabelIndexes = null
+) {
   slices.forEach((sliceInfo, index) => {
     const labelIndex = sliceInfo.labelIndex ?? index;
     const alpha = sliceInfo.alpha ?? 1;
-    if (sliceInfo.width <= 0.035 || alpha <= 0.01) return;
+    if (sliceInfo.width <= 0.035 || alpha <= 0.01 || hiddenLabelIndexes?.has(index)) return;
 
     const angle = sliceInfo.start + sliceInfo.width / 2;
     const screenAngle = angle + rotation;
@@ -1138,16 +1371,7 @@ function drawScreenLockedSliceText(slices, rotation, cx, cy, radius, size, profi
     ctx.globalAlpha = alpha;
     ctx.translate(x, y);
     ctx.rotate(profile.alignedAngle + jitter + flip);
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.font = `900 ${fontSize}px Comic Sans MS, Arial Black, Impact, sans-serif`;
-    ctx.lineJoin = "round";
-    ctx.lineWidth = Math.max(5, size * 0.008);
-    ctx.strokeStyle = "#050505";
-    ctx.fillStyle = "#ffffff";
-    ctx.strokeText(label, 0, 0, maxWidth);
-    ctx.fillStyle = index % 2 ? "#fffef4" : "#eadb67";
-    ctx.fillText(label, 0, 0, maxWidth);
+    drawWheelLabel(label, fontSize, maxWidth, size, index % 2 ? "#fffef4" : "#eadb67");
     ctx.restore();
   });
 }
@@ -2103,16 +2327,45 @@ function spin() {
     const index = pointerIndexForCurrentWheel(rotation, activePointerAngle, customSlices);
     return currentWheelNames[index] || currentWheelNames[0] || finalWinner;
   };
+  const swapLabelAnimationForEffect = (effect, progress) => {
+    if (!effect.swapAnimation) return null;
+    return {
+      ...effect.swapAnimation,
+      progress
+    };
+  };
   const applyNameSwap = (effect, rotation, activePointerAngle = pointerAngle) => {
     if (effect.swapApplied || currentWheelNames.length < 2) return;
     const slotSlices = currentSlotSlices();
     const selectedIndex = currentPointerIndexFromSlices(slotSlices, rotation, activePointerAngle);
+    if (selectedIndex < 0) return;
     const swapCandidates = currentWheelNames
       .map((_, index) => index)
       .filter((index) => index !== selectedIndex);
+    if (!swapCandidates.length) return;
     const swapIndex = swapCandidates[randomInt(swapCandidates.length)];
     const selectedName = currentWheelNames[selectedIndex];
-    currentWheelNames[selectedIndex] = currentWheelNames[swapIndex];
+    const swapName = currentWheelNames[swapIndex];
+    effect.swapAnimation = {
+      hiddenIndexes: new Set([selectedIndex, swapIndex]),
+      items: [
+        {
+          name: selectedName,
+          fromIndex: selectedIndex,
+          toIndex: swapIndex,
+          fromSlice: slotBaseSlices[selectedIndex],
+          toSlice: slotBaseSlices[swapIndex]
+        },
+        {
+          name: swapName,
+          fromIndex: swapIndex,
+          toIndex: selectedIndex,
+          fromSlice: slotBaseSlices[swapIndex],
+          toSlice: slotBaseSlices[selectedIndex]
+        }
+      ]
+    };
+    currentWheelNames[selectedIndex] = swapName;
     currentWheelNames[swapIndex] = selectedName;
     finalWinner = currentWheelNames[selectedIndex];
     namesSwapped = true;
@@ -2236,6 +2489,7 @@ function spin() {
     let rotation;
     let pointerOffset = 0;
     let activeElasticEffect = null;
+    let activeSwapAnimation = null;
 
     if (profile.fakeout) {
       if (elapsed < profile.mainDuration) {
@@ -2265,7 +2519,10 @@ function spin() {
                 * Math.pow(1 - localProgress, 2.15)
               : 0;
             const activePointerAngle = basePointerAngle + pointerOffset;
-            if (effect.kind === "swap") applyNameSwap(effect, rotation, activePointerAngle);
+            if (effect.kind === "swap") {
+              applyNameSwap(effect, rotation, activePointerAngle);
+              activeSwapAnimation = swapLabelAnimationForEffect(effect, localProgress);
+            }
             if (effect.kind === "elastic" && effect.elasticIndex === null) {
               effect.elasticIndex = pointerIndexForCurrentWheel(rotation, activePointerAngle);
             }
@@ -2328,7 +2585,7 @@ function spin() {
         activeElasticEffect.effect.elasticDirection
       );
     }
-    drawWheel(currentWheelNames, state.rotation, drawSlices);
+    drawWheel(currentWheelNames, state.rotation, drawSlices, activeSwapAnimation);
 
     const indexAtPointer = pointerIndexForCurrentWheel(state.rotation, pointerAngle, drawSlices);
     if (indexAtPointer !== lastPointerIndex) {
@@ -2423,12 +2680,15 @@ function toggleSound() {
   render();
 }
 
-peopleInput.addEventListener("input", () => {
+function handlePeopleInputEdit() {
   if (isSpinning) return;
   clearFakeCrash();
   abortRemovalAnimation();
   resetVisualSliceState();
   clearDisplayedWheel(true);
+  state.picked = [];
+  state.history = [];
+  targetAdDismissed = false;
   pendingThemeSeed = null;
   pendingSendoff = false;
   pendingSendoffThemeSeed = null;
@@ -2436,7 +2696,10 @@ peopleInput.addEventListener("input", () => {
   pendingRemovalIntensity = 0;
   hideResultOverlay();
   render();
-});
+}
+
+peopleInput.addEventListener("input", handlePeopleInputEdit);
+peopleInput.addEventListener("change", handlePeopleInputEdit);
 
 spinButton.addEventListener("click", spin);
 resetButton.addEventListener("click", resetRound);
