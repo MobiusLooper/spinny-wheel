@@ -11,7 +11,7 @@
 
     <main class="app-shell">
       <header class="masthead">
-        <p class="kicker">TRANSACTION ENRICHMENT SQUAD</p>
+        <p id="squadKicker" class="kicker">STANDUP SQUAD</p>
         <h1 aria-label="Spinny Wheel dot exe">
           <span>SPINNY</span>
           <span>WHEEL.EXE</span>
@@ -46,13 +46,14 @@
             <canvas id="wheelCanvas" width="720" height="720" aria-label="Spinning wheel"></canvas>
             <div class="pointer" aria-hidden="true"></div>
           </div>
-          <aside id="targetAd" class="target-ad" aria-label="Sponsored transaction enrichment ad"></aside>
+          <aside id="targetAd" class="target-ad" aria-label="Sponsored standup ad"></aside>
         </section>
       </section>
     </main>
 
     <div id="resultOverlay" class="result-overlay" hidden aria-live="assertive"></div>
 
+    <script src="team-content.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

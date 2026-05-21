@@ -2,16 +2,80 @@ const TAU = Math.PI * 2;
 const POINTER_ANGLE = -Math.PI / 2;
 const STORAGE_KEY = "spinny-wheel-exe-state-v1";
 
-const fallbackPeople = [
-  "Ada",
-  "Grace",
-  "Linus",
-  "Margaret",
-  "Radia",
-  "Tim",
-  "Katherine",
-  "Ken"
-];
+const DEFAULT_CONTENT = {
+  squadName: "STANDUP SQUAD",
+  fallbackPeople: ["Ada", "Grace", "Linus", "Margaret"],
+  winnerPhrases: [
+    "{name} is up next",
+    "the wheel picked {name}",
+    "over to {name}",
+    "{name} has the floor"
+  ],
+  finalWheelLabels: [
+    "and finally, {name}",
+    "last one: {name}",
+    "closing ceremony: {name}",
+    "the final pick is {name}"
+  ],
+  sendoffMessages: [
+    "standup is complete",
+    "everyone has had a turn",
+    "the wheel is empty now",
+    "round complete"
+  ],
+  squadLore: [
+    "STANDUP CONTINUES",
+    "ROUND IN PROGRESS",
+    "THE WHEEL HAS NOTES",
+    "EVERYONE GETS A TURN"
+  ],
+  targetedAds: [
+    {
+      eyebrow: "Sponsored",
+      target: "the team",
+      headline: "Need a standup order with extra drama?",
+      body: "WheelCorp rotates names, invents fake urgency, and keeps the meeting moving.",
+      product: "WheelCorp",
+      cta: "Spin again",
+      lore: "THE WHEEL NEEDS TEAM CONTENT"
+    }
+  ],
+  winnerBadges: ["PICKED", "NEXT UP", "WHEEL SAYS", "YOUR TURN"],
+  sendoffStamps: ["ALL DONE", "ROUND COMPLETE", "GOODBYE MODE", "NO MORE NAMES"],
+  sendoffSubtitles: [
+    "click anywhere to return",
+    "no further wheel events remain",
+    "reset round if you need another pass"
+  ],
+  crashMessages: [
+    "Fatal ceremony error at 0xWHEEL",
+    "",
+    "Cause: everyone has spoken and the application cannot cope.",
+    "Recovered names: 0",
+    "Pointer integrity: emotionally unavailable",
+    "Suggested action: reset the round.",
+    "",
+    "SPINNY_WHEEL_STACKTRACE:",
+    "  at SendoffPopup.close()",
+    "  at MeetingFinished.butTooDramatically()",
+    "  at Wheel.exe: line absolutely not found"
+  ]
+};
+
+const configuredContent = window.SPINNY_CONTENT && typeof window.SPINNY_CONTENT === "object"
+  ? window.SPINNY_CONTENT
+  : {};
+const squadName = contentText(configuredContent.squadName, DEFAULT_CONTENT.squadName);
+const fallbackPeople = contentList(configuredContent.fallbackPeople, DEFAULT_CONTENT.fallbackPeople);
+const winnerPhrases = contentList(configuredContent.winnerPhrases, DEFAULT_CONTENT.winnerPhrases);
+const finalWheelLabels = contentList(configuredContent.finalWheelLabels, DEFAULT_CONTENT.finalWheelLabels);
+const sendoffMessages = contentList(configuredContent.sendoffMessages, DEFAULT_CONTENT.sendoffMessages);
+const squadLore = contentList(configuredContent.squadLore, DEFAULT_CONTENT.squadLore);
+const targetedAds = contentAdList(configuredContent.targetedAds, DEFAULT_CONTENT.targetedAds);
+const winnerBadges = contentList(configuredContent.winnerBadges, DEFAULT_CONTENT.winnerBadges);
+const sendoffStamps = contentList(configuredContent.sendoffStamps, DEFAULT_CONTENT.sendoffStamps);
+const sendoffSubtitles = contentList(configuredContent.sendoffSubtitles, DEFAULT_CONTENT.sendoffSubtitles);
+const crashMessages = contentList(configuredContent.crashMessages, DEFAULT_CONTENT.crashMessages);
 
 const wheelColors = [
   "#c45532",
@@ -36,9 +100,14 @@ const soundButton = document.querySelector("#soundButton");
 const remainingCount = document.querySelector("#remainingCount");
 const resultOverlay = document.querySelector("#resultOverlay");
 const targetAd = document.querySelector("#targetAd");
+const squadKicker = document.querySelector("#squadKicker");
 const pointer = document.querySelector(".pointer");
 const canvas = document.querySelector("#wheelCanvas");
 const ctx = canvas.getContext("2d");
+
+if (squadKicker) {
+  squadKicker.textContent = squadName;
+}
 
 const themeKeys = [
   "acid",
@@ -127,301 +196,6 @@ appThemes.forEach((theme) => {
   theme.vars = theme.vars.slice(0, themeKeys.length);
 });
 
-const winnerPhrases = [
-  "{name} GOES NOW!!!1!",
-  "IT'S {name}'S TURN!",
-  "{name} HAS THE FLOOR, UNFORTUNATELY",
-  "THE WHEEL DEMANDS {name}",
-  "{name} HAS BEEN PIXEL-SELECTED",
-  "NEXT UP: {name}!!!",
-  "{name} GOT GOT",
-  "{name} ENTERS THE STANDUP ZONE",
-  "PLEASE WELCOME {name}, I GUESS",
-  "{name} IS NOW THE PROBLEM",
-  "THE TRIANGLE POINTS AT {name}",
-  "{name} HAS BEEN CHOSEN BY BAD MATH",
-  "{name} IS THE CURRENT VICTIM",
-  "OVER TO {name}",
-  "{name} GOES BEFORE THE COUNCIL",
-  "THE COMPUTER SAYS {name}",
-  "{name} WAS INSIDE THE WHEEL ALL ALONG",
-  "{name} GETS THE MICROPHONE",
-  "LOOKS LIKE {name} TIME",
-  "{name} HAS TO DO WORDS",
-  "{name} IS UP, PROBABLY",
-  "THE PIXELS HAVE RATIFIED {name}",
-  "{name} WON THE TINY BAD PRIZE",
-  "{name} TAKES THE NEXT LAP",
-  "ALL SIGNS POINT TO {name}",
-  "{name} HAS BEEN ELECTED BY NO ONE",
-  "{name} MUST SPEAK NOW",
-  "{name} IS LIVE ON CHANNEL WHEEL",
-  "THE POINTER BETRAYS {name}",
-  "{name} RECEIVES THE CURSED BATON",
-  "IT LANDED ON {name}, SOMEHOW",
-  "{name} IS THE NEXT HUMAN",
-  "THE WHEEL HAS A NOTE: {name}",
-  "{name} GETS THE GLORY SLOT",
-  "CURRENTLY HAPPENING: {name}",
-  "{name} HAS BEEN LOUDLY INDICATED",
-  "MAKE WAY FOR {name}",
-  "{name} IS THE STANDUP ITEM",
-  "THE BAD CIRCLE WANTS {name}",
-  "{name} GETS THE NEXT TURN",
-  "{name} IS UP NEXT!!!",
-  "THE MACHINE CHOOSES {name}",
-  "{name} HAS BEEN SORTED TO NOW",
-  "{name}, REPORT TO THE WHEEL",
-  "THE WHEEL VIBES SAY {name}",
-  "{name} IS THIS MOMENT'S PERSON",
-  "{name} GOES NOW OR ELSE",
-  "I REGRET TO ANNOUNCE {name}",
-  "{name} HAS ENTERED TURN MODE",
-  "THE ANSWER IS {name}",
-  "LLMAAJ HAS SCORED {name}",
-  "{name} IS THE PROD BASELINE",
-  "THE DLQ REDRIVES {name}",
-  "{name} BEATS THE CHALLENGER MODEL",
-  "RAW_TRANSACTION POINTS AT {name}",
-  "{name} HAS KAFKA CONSUMER ENERGY",
-  "BACKFILL COMPLETE: {name}",
-  "{name} HAS GOLDEN-SET VIBES",
-  "THE COUNTERPARTY IS {name}",
-  "{name} IS STATISTICALLY THE SAME"
-];
-
-const finalWheelLabels = [
-  "and finally, {name}",
-  "last one: {name}",
-  "closing ceremony: {name}",
-  "inevitably, {name}",
-  "the final boss is {name}"
-];
-
-const sendoffMessages = [
-  "everyone now have a nice day",
-  "time to do the things",
-  "bye bye see everyone later",
-  "standup has left the building",
-  "go forth and enrich transactions",
-  "the circle is empty now",
-  "please return to your tabs",
-  "meeting concluded by bad geometry",
-  "that was legally a standup",
-  "the wheel releases you",
-  "all humans have been processed",
-  "nothing left but Jira",
-  "thank you for attending the rectangle",
-  "you may now resume having problems",
-  "see everyone in the next ritual",
-  "run along now",
-  "the pixels say goodbye",
-  "back to the important nonsense",
-  "the agenda has evaporated",
-  "standup complete, emotionally speaking",
-  "go make the graphs less weird",
-  "the wheel is going for a lie down",
-  "please enjoy the rest of capitalism",
-  "all turns have been consumed",
-  "return to prod with caution",
-  "the ceremony is over",
-  "have a productive-ish day",
-  "goodbye from the bad circle",
-  "go do one small useful thing",
-  "the squad may now disperse"
-];
-
-const squadLore = [
-  "RAW_TRANSACTION BACK TO PLAID?",
-  "DLQ TOPIC HAS MESSAGES",
-  "ESPRESSO DEFAULT TOPIC",
-  "PR-1234 INVOCATIONS AVRO V1 DLQ",
-  "1K BACKFILL STARTING NOW",
-  "BLANK COUNTERPARTY NAME",
-  "CLEO COUNTERPARTY SCORES",
-  "LLMAAJ SAYS MAYBE",
-  "EXCLUDE EMPLOYEES FROM THE EVAL",
-  "MAX_DECIMAL ISSUE",
-  "DATACLASSES-AVROSCHEMA MOMENT",
-  "PROD BASELINE VS CHALLENGER MODEL",
-  "KAFKA CONSUMER CHANGES",
-  "TRANSACTION_ENRICHMENT_V1 OUTPUT TOPIC",
-  "TX/SEC IS GOING DOWN",
-  "LAG IS SLOWLY DECREASING",
-  "AUTOPILOT BACKFILLS DETECTED",
-  "SPLIT-COST PAYMENTS?",
-  "HALF SELF-TRANSFERS",
-  "GOLDEN SET ACCURACY",
-  "RECURRING TX GROUP-LEVEL RECALL",
-  "INCOME NEXT DATE +/-1 DAY",
-  "UNCONNECTED ACCOUNT DETECTION",
-  "FALLING BACK TO LOCAL BYT5_MERCHANT",
-  "FASTAVRO SAYS NO",
-  "AWS GPU SHORTAGE THREAD",
-  "I AM JUST ASKING QUESTIONS",
-  "SHOULD BE IN THIS WEEK",
-  "PERFORMANCE NEEDS TO BE STATISTICALLY SAME",
-  "THREE ENRICHERS IN PROD?",
-  "ACTIVE LEARNING PIPELINE",
-  "CATEGORISATION ORACLE",
-  "MAIN ACCOUNT SIGNALS",
-  "EARNED INCOME DETECTION",
-  "100K DISAMBIGUATED COUNTERPARTY INDEX",
-  "BILLS RECALL IS SUSPICIOUSLY HIGH",
-  "OFFSET LAG ALERT HAS TWO NEW CONDITIONS",
-  "LOW-THROUGHPUT ASYNC ENRICHER ALERT",
-  "ENTIRE MEMORY USED BY SOME PODS",
-  "PR ENDPOINT IS FOR EVALUATION",
-  "FLEX PAYMENT SELF-TRANSFER?",
-  "AIRFLOW DEV MERGE CONFLICT",
-  "ML DIGEST ENDPOINT MEANS PROD TRAFFIC?",
-  "P95 LATENCY VS PARITY CHECK",
-  "WAY OF WORKING SESSION CONCLUSIONS",
-  "CLEO COUNTERPARTY EVAL NEEDS ORACLE LABELS",
-  "ONWARDS",
-  "NICE",
-  "AMAZE",
-  "THAT'S BRUCE"
-];
-
-const targetedAds = [
-  {
-    eyebrow: "Sponsored",
-    target: "Josh",
-    headline: "Cleo counterparty precision looking too knowable?",
-    body: "LLMaaj Lens excludes employees, counts false negatives, and says 0.99 F1 with worrying confidence.",
-    product: "Counterparty Oracle Pro",
-    cta: "Score the Cleo bits",
-    lore: "CLEO COUNTERPARTY EVAL EXCLUDES EMPLOYEES"
-  },
-  {
-    eyebrow: "Promoted",
-    target: "Alberto",
-    headline: "Need it statistically the same, not identical?",
-    body: "BaselineBuddy gives challenger models a tiny 1k snack, then prints a green-ish rectangle for parity.",
-    product: "BaselineBuddy",
-    cta: "Open challenger model",
-    lore: "STATISTICALLY SAME, NOT IDENTICAL"
-  },
-  {
-    eyebrow: "Recommended",
-    target: "Ana",
-    headline: "PR endpoint needed for evaluation?",
-    body: "FlyteFindr checks the VPN, finds the dashboard link, and gently reminds MLflow what domain it lives in.",
-    product: "FlyteFindr",
-    cta: "Locate dashboard",
-    lore: "PR ENDPOINT FOR EVALUATION"
-  },
-  {
-    eyebrow: "Sponsored result",
-    target: "Valentina",
-    headline: "Oracle labels delaying the Cleo counterparty eval?",
-    body: "FeedbackPipeline Plus aligns the validation layer, reruns TE1.0, and asks whether the LLM is even online.",
-    product: "OracleLabel Studio",
-    cta: "Label the dataset",
-    lore: "VALIDATION LAYER MATCHES THE NEW PROMPT"
-  },
-  {
-    eyebrow: "Sponsored",
-    target: "Orestis",
-    headline: "User embeddings missing life events?",
-    body: "StateClusterer spots income-loss vibes, raise-shaped clusters, and one Jira ticket that escaped the sprint.",
-    product: "Bruce Embeddings",
-    cta: "Cluster the humans",
-    lore: "USER EMBEDDINGS MAY KNOW ABOUT RAISES"
-  },
-  {
-    eyebrow: "Promoted",
-    target: "Raps",
-    headline: "Flatmate paid you half?",
-    body: "SplitCost-o-Matic links 50%, 33.3%, and 25% repayments so categories can net out dramatically.",
-    product: "SplitCost-o-Matic",
-    cta: "Submit hackathon idea",
-    lore: "SPLIT-COST PAYMENTS ARE SELF-TRANSFER-ISH"
-  },
-  {
-    eyebrow: "Recommended",
-    target: "Laurence",
-    headline: "Standup threatening to exceed 15 minutes?",
-    body: "CeremonyCompressor turns Notion backlog mist into Jira tickets and ships one bi-sprintly retro trial.",
-    product: "WaysOfWorking Turbo",
-    cta: "Tighten ceremony",
-    lore: "KEEP STANDUPS TIGHT TO 15 MINUTES"
-  },
-  {
-    eyebrow: "Sponsored result",
-    target: "Faraz",
-    headline: "Offset lag alert still too interesting?",
-    body: "AlertSmith adds low-range, long-range, low-throughput, and entire-memory dashboard anxiety.",
-    product: "AlertSmith",
-    cta: "Tune the threshold",
-    lore: "OFFSET LAG ALERT NEEDS LOW AND LONG RANGE"
-  },
-  {
-    eyebrow: "Recommended",
-    target: "Sam",
-    headline: "Need another 10k users backfilled?",
-    body: "PartitionFiller asks for the worst, fills every partition, and remembers the prod DLQ checklist this time.",
-    product: "PartitionFiller",
-    cta: "Request more users",
-    lore: "ALL PARTITIONS MUST BE FULL"
-  },
-  {
-    eyebrow: "Sponsored",
-    target: "Pedro",
-    headline: "Parity check or p95 latency?",
-    body: "PerfProbe compares PR branches against prod and politely asks what kind of performance you meant.",
-    product: "PR Evaluation Tool",
-    cta: "Measure p95",
-    lore: "P95 LATENCY IS NOT THE WHOLE PARITY CHECK"
-  },
-  {
-    eyebrow: "Sponsored",
-    target: "Adriana",
-    headline: "`max_decimal` says -1 again?",
-    body: "AvroTherapy removes custom DLQs, writes to espresso defaults, and opens exactly one package issue.",
-    product: "SchemaSentry",
-    cta: "Validate my decimal",
-    lore: "DATACLASSES-AVROSCHEMA ISSUE RAISED"
-  },
-  {
-    eyebrow: "Promoted",
-    target: "Alex",
-    headline: "Data sources hiding from dbt?",
-    body: "SourceMap Casino tracks Recurring Incomes, Bills, Accounts, and Logins before the T2 KR spreadsheet blinks.",
-    product: "SourceMap Casino",
-    cta: "Find source location",
-    lore: "DATA SOURCE LOCATIONS FOR BILLS AND INCOME"
-  },
-  {
-    eyebrow: "Promoted",
-    target: "Natalie",
-    headline: "Precision and recall swapped again?",
-    body: "MetricLibrarian files every retrieved transaction on the right shelf, including the suspicious flex payment.",
-    product: "MetricLibrarian",
-    cta: "Remember recall",
-    lore: "FLEX PAYMENT SELF-TRANSFER QUESTION"
-  },
-  {
-    eyebrow: "Sponsored",
-    target: "Edgar",
-    headline: "Airflow dev blocked by branch soup?",
-    body: "ConflictOmitter resolves `.gitignore`, checks Active Branches, and deploys before the digest notices.",
-    product: "Airflow Branch Bouncer",
-    cta: "Omit branch for now",
-    lore: "AIRFLOW DEV DEPLOY HAD A MERGE CONFLICT"
-  },
-  {
-    eyebrow: "Recommended",
-    target: "Marian",
-    headline: "Newsletter says endpoint. But endpoint?",
-    body: "DigestDecoder explains prod traffic, removes duplicate status words, and ships the ML weekly with less mystery.",
-    product: "DigestDecoder",
-    cta: "Decode endpoint",
-    lore: "ML DIGEST ENDPOINT MIGHT MEAN PROD TRAFFIC"
-  }
-];
-
 const labelModes = [
   { name: "classic", weight: 20 },
   { name: "allAligned", weight: 15 },
@@ -462,6 +236,36 @@ let pendingRemovalEffects = false;
 let pendingRemovalIntensity = 0;
 let visualSliceState = new Map();
 let crashOverlay = null;
+
+function contentText(value, fallback) {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
+
+function contentList(value, fallback) {
+  const list = Array.isArray(value) ? value : [];
+  const cleaned = list
+    .filter((item) => typeof item === "string")
+    .map((item) => item.trim())
+    .filter(Boolean);
+  return cleaned.length ? cleaned : fallback.slice();
+}
+
+function contentAdList(value, fallback) {
+  const list = Array.isArray(value) ? value : [];
+  const cleaned = list.map((item) => {
+    const ad = item && typeof item === "object" ? item : {};
+    return {
+      eyebrow: contentText(ad.eyebrow, "Sponsored"),
+      target: contentText(ad.target, "the team"),
+      headline: contentText(ad.headline, "Need a better standup order?"),
+      body: contentText(ad.body, "The wheel rotates names and keeps the meeting moving."),
+      product: contentText(ad.product, "Spinny Wheel"),
+      cta: contentText(ad.cta, "Spin again"),
+      lore: contentText(ad.lore, "THE WHEEL NEEDS TEAM CONTENT")
+    };
+  });
+  return cleaned.length ? cleaned : fallback.map((ad) => ({ ...ad }));
+}
 
 function loadState() {
   let saved = null;
@@ -2077,14 +1881,13 @@ function showResultOverlay(name) {
   const nameText = document.createElement("div");
   const subtitle = document.createElement("div");
   const lore = document.createElement("div");
-  const cheapAdjectives = ["LEGAL PICK", "PROD CERTIFIED", "DLQ OK", "BUDGET RESULT", "WOW OK", "RAW PICK", "NO REFUNDS", "PLAIDISH"];
 
   card.className = `overlay-card variant-${variant}`;
   card.style.setProperty("--overlay-tilt", `${randomBetween(-9, 9).toFixed(2)}deg`);
   card.style.setProperty("--overlay-skew", `${randomBetween(-7, 7).toFixed(2)}deg`);
 
   kicker.className = "overlay-kicker";
-  kicker.textContent = cheapAdjectives[randomInt(cheapAdjectives.length)];
+  kicker.textContent = winnerBadges[randomInt(winnerBadges.length)];
 
   nameText.className = "overlay-name";
   nameText.textContent = name;
@@ -2132,35 +1935,20 @@ function showSendoffOverlay(themeSeed) {
   const message = document.createElement("div");
   const subtitle = document.createElement("div");
   const lore = document.createElement("div");
-  const subtitleBits = [
-    "click anywhere to return to whatever this was",
-    "final modal acknowledged by no committee",
-    "no further wheel events remain",
-    "the standup-shaped object is complete",
-    "reset round if you need more ceremony"
-  ];
-  const stamps = [
-    "ALL DONE",
-    "ROUND COMPLETE",
-    "SHIP IT???",
-    "CEREMONY CLOSED",
-    "GOODBYE MODE",
-    "NO MORE NAMES"
-  ];
 
   card.className = `overlay-card sendoff-card variant-${variant}`;
   card.style.setProperty("--overlay-tilt", `${randomBetween(-7, 7).toFixed(2)}deg`);
   card.style.setProperty("--overlay-skew", `${randomBetween(-5, 5).toFixed(2)}deg`);
 
   kicker.className = "overlay-kicker sendoff-kicker";
-  kicker.textContent = stamps[randomInt(stamps.length)];
+  kicker.textContent = sendoffStamps[randomInt(sendoffStamps.length)];
 
   message.className = "overlay-name sendoff-message";
   message.textContent = randomSendoffMessage();
   message.style.setProperty("--name-tilt", `${randomBetween(-5, 5).toFixed(2)}deg`);
 
   subtitle.className = "overlay-subtitle sendoff-subtitle";
-  subtitle.textContent = subtitleBits[randomInt(subtitleBits.length)];
+  subtitle.textContent = sendoffSubtitles[randomInt(sendoffSubtitles.length)];
 
   lore.className = "overlay-lore sendoff-lore";
   lore.textContent = squadLore[randomInt(squadLore.length)];
@@ -2220,19 +2008,7 @@ function fakeCrash() {
   title.className = "fake-crash-title";
   title.textContent = "WHEEL.EXE HAS STOPPED BEING A WEBSITE";
   message.className = "fake-crash-message";
-  message.textContent = [
-    "Fatal ceremony error at 0xWHEEL",
-    "",
-    "Cause: everyone has spoken and the application cannot cope.",
-    "Recovered names: 0",
-    "Pointer integrity: emotionally unavailable",
-    "Suggested action: pretend this browser tab is normal.",
-    "",
-    "TRANSACTION_ENRICHMENT_SQUAD_STACKTRACE:",
-    "  at SendoffPopup.close()",
-    "  at MeetingFinished.butTooDramatically()",
-    "  at Wheel.exe: line absolutely not found"
-  ].join("\n");
+  message.textContent = crashMessages.join("\n");
   reboot.type = "button";
   reboot.className = "fake-crash-reboot";
   reboot.textContent = "REBOOT WHEEL.EXE";
