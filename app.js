@@ -643,6 +643,25 @@ function angleInSlice(slices, index, ratio) {
   return slice.start + slice.width * ratio;
 }
 
+function sampleWeightedSliceLanding(slices) {
+  if (!slices.length) return { index: -1, ratio: 0.5 };
+
+  const targetAngle = randomBetween(0, TAU);
+  const index = slices.findIndex((slice) => {
+    return targetAngle >= slice.start && targetAngle < slice.end;
+  });
+  const safeIndex = index >= 0 ? index : slices.length - 1;
+  const slice = slices[safeIndex];
+  const ratio = slice.width > 0
+    ? (targetAngle - slice.start) / slice.width
+    : 0.5;
+
+  return {
+    index: safeIndex,
+    ratio: Math.max(0.001, Math.min(0.999, ratio))
+  };
+}
+
 function fitCanvas() {
   const rect = canvas.getBoundingClientRect();
   const dpr = Math.max(1, window.devicePixelRatio || 1);
@@ -1876,21 +1895,6 @@ function playTinyCheer() {
   noise.stop(now + 0.38);
 }
 
-function chooseLanding(count, dramatic, intensity = 0) {
-  if (count <= 1) return 0.5;
-  if (!dramatic) return randomBetween(0.28, 0.72);
-
-  const nearEdge = randomUnit() < 0.68 + intensity * 0.27;
-  if (!nearEdge) return randomBetween(0.32, 0.68);
-
-  const beforeEdge = randomUnit() < 0.5;
-  const edgeInset = Math.max(0.012, 0.04 - intensity * 0.025);
-  const edgeOuter = Math.max(edgeInset + 0.045, 0.13 - intensity * 0.035);
-  return beforeEdge
-    ? randomBetween(edgeInset, edgeOuter)
-    : randomBetween(1 - edgeOuter, 1 - edgeInset);
-}
-
 function openingNormalSpinCount(rosterSize) {
   if (rosterSize <= 2) return 0;
   if (rosterSize <= 4) return 1;
@@ -2005,7 +2009,6 @@ function chooseSpinProfile(count, stage = { openingNormal: false, intensity: 0 }
       normal: true,
       fakeout: false,
       effects: [],
-      edgeDrama: false,
       lateWobble: false,
       pointerTrick: false,
       swapTrick: false,
@@ -2040,7 +2043,6 @@ function chooseSpinProfile(count, stage = { openingNormal: false, intensity: 0 }
     normal,
     fakeout,
     effects,
-    edgeDrama: fakeout && randomUnit() < 0.38 + intensity * 0.52,
     lateWobble: effects.some((effect) => effect.kind === "bounce"),
     pointerTrick,
     swapTrick,
@@ -2308,11 +2310,12 @@ function spin() {
   ensureAudio();
   const basePointerAngle = pointerAngle;
 
-  const winnerIndex = randomInt(remaining.length);
-  const winner = remaining[winnerIndex];
   const profile = chooseSpinProfile(remaining.length, stage);
   startSpinSound(profile);
   const slices = wheelSlices(remaining);
+  const sampledLanding = sampleWeightedSliceLanding(slices);
+  const winnerIndex = sampledLanding.index;
+  const winner = remaining[winnerIndex];
   const slotBaseSlices = slicesWithSlotNames(remaining, slices);
   let currentWheelNames = remaining.slice();
   let namesSwapped = false;
@@ -2395,7 +2398,7 @@ function spin() {
     effect.droopPrepared = true;
   };
   const winnerSlice = slices[winnerIndex];
-  const winnerLandingRatio = chooseLanding(remaining.length, profile.edgeDrama, profile.intensity);
+  const winnerLandingRatio = sampledLanding.ratio;
   const apparentIndex = profile.pointerTrick
     ? chooseApparentIndex(winnerIndex, remaining.length)
     : winnerIndex;
