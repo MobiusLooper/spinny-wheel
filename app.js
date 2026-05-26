@@ -2689,8 +2689,7 @@ function handlePeopleInputEdit() {
   abortRemovalAnimation();
   resetVisualSliceState();
   clearDisplayedWheel(true);
-  state.picked = [];
-  state.history = [];
+  syncPickedToRoster();
   targetAdDismissed = false;
   pendingThemeSeed = null;
   pendingSendoff = false;
