@@ -46,7 +46,6 @@ window.SPINNY_CONTENT = {
     "IT LANDED ON {name}, SOMEHOW",
     "{name} IS THE NEXT HUMAN",
     "THE WHEEL HAS A NOTE: {name}",
-    "{name} GETS THE GLORY SLOT",
     "CURRENTLY HAPPENING: {name}",
     "{name} HAS BEEN LOUDLY INDICATED",
     "MAKE WAY FOR {name}",

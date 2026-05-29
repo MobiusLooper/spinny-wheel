@@ -293,6 +293,8 @@ function loadState() {
   setPointerAngle(state.pointerAngle);
   visualSliceState = deserializeVisualSliceState(saved.visualSliceState);
   applyTheme(state.themeIndex);
+  syncPickedToRoster();
+  reconcileVisualSliceState(getRemaining());
 }
 
 function saveState() {
@@ -313,7 +315,11 @@ function saveState() {
 }
 
 function normalizeName(name) {
-  return name.trim().replace(/\s+/g, " ");
+  return String(name ?? "").trim().replace(/\s+/g, " ");
+}
+
+function personKey(name) {
+  return normalizeName(name).toLocaleLowerCase();
 }
 
 function rosterFromInput() {
@@ -323,7 +329,7 @@ function rosterFromInput() {
     .map(normalizeName)
     .filter(Boolean)
     .filter((name) => {
-      const key = name.toLocaleLowerCase();
+      const key = personKey(name);
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
@@ -331,14 +337,31 @@ function rosterFromInput() {
 }
 
 function getRemaining(roster = rosterFromInput()) {
-  const picked = new Set(state.picked);
-  return roster.filter((name) => !picked.has(name));
+  const picked = new Set(state.picked.map(personKey));
+  return roster.filter((name) => !picked.has(personKey(name)));
+}
+
+function pickedCountInRoster(roster) {
+  const picked = new Set(state.picked.map(personKey));
+  return roster.filter((name) => picked.has(personKey(name))).length;
 }
 
 function syncPickedToRoster() {
-  const roster = new Set(rosterFromInput());
-  state.picked = state.picked.filter((name) => roster.has(name));
-  state.history = state.history.filter((name) => roster.has(name));
+  const seen = new Set();
+  state.picked = state.picked
+    .map(normalizeName)
+    .filter(Boolean)
+    .filter((name) => {
+      const key = personKey(name);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+  const picked = new Set(state.picked.map(personKey));
+  state.history = state.history
+    .map(normalizeName)
+    .filter((name) => picked.has(personKey(name)));
 }
 
 function randomUnit() {
@@ -542,6 +565,40 @@ function setVisualSliceStateFromSlices(slices) {
       labelIndex: slice.labelIndex ?? index
     });
   });
+}
+
+function reconcileVisualSliceState(names) {
+  if (!visualSliceState.size) return;
+
+  const existingByKey = new Map();
+  visualSliceState.forEach((slice, name) => {
+    existingByKey.set(personKey(name), slice);
+  });
+
+  const existingSlices = names
+    .map((name) => existingByKey.get(personKey(name)))
+    .filter(Boolean);
+
+  if (!names.length || !existingSlices.length) {
+    visualSliceState = new Map();
+    return;
+  }
+
+  const averageWeight = existingSlices.reduce((total, slice) => total + slice.weight, 0) / existingSlices.length;
+  const nextState = new Map();
+
+  names.forEach((name, index) => {
+    const existing = existingByKey.get(personKey(name));
+    nextState.set(name, existing
+      ? { ...existing }
+      : {
+        weight: averageWeight,
+        colorIndex: index,
+        labelIndex: index
+      });
+  });
+
+  visualSliceState = nextState;
 }
 
 function wheelSlices(names) {
@@ -2305,7 +2362,7 @@ function spin() {
   hideResultOverlay();
   if (isRemoving) return;
   clearDisplayedWheel(true);
-  const stage = chooseRoundStage(roster.length, state.picked.length, remaining.length);
+  const stage = chooseRoundStage(roster.length, pickedCountInRoster(roster), remaining.length);
   labelProfile = chooseLabelProfile(stage);
   ensureAudio();
   const basePointerAngle = pointerAngle;
@@ -2687,9 +2744,9 @@ function handlePeopleInputEdit() {
   if (isSpinning) return;
   clearFakeCrash();
   abortRemovalAnimation();
-  resetVisualSliceState();
-  clearDisplayedWheel(true);
+  clearDisplayedWheel();
   syncPickedToRoster();
+  reconcileVisualSliceState(getRemaining());
   targetAdDismissed = false;
   pendingThemeSeed = null;
   pendingSendoff = false;
