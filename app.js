@@ -1,25 +1,6 @@
 const TAU = Math.PI * 2;
 const POINTER_ANGLE = -Math.PI / 2;
 const STORAGE_KEY = "spinny-wheel-exe-state-v1";
-const SPIN_MUSIC_VOLUME = 0.12;
-const SPIN_MUSIC_TRACKS = [
-  {
-    src: "assets/audio/369227__antoinevg__trance-loop.wav",
-    level: 1
-  },
-  {
-    src: "assets/audio/795731__andrey51__loop-140-bpm-90s-eurodance.mp3",
-    level: 0.98
-  },
-  {
-    src: "assets/audio/361890__thenikonproductions__techno-loop.wav",
-    level: 0.63
-  },
-  {
-    src: "assets/audio/559994__snapper4298__108_trance_loop.wav",
-    level: 0.68
-  }
-];
 
 const DEFAULT_CONTENT = {
   squadName: "STANDUP SQUAD",
@@ -243,8 +224,6 @@ let lastPointerIndex = -1;
 let lastTickAt = 0;
 let audioContext = null;
 let spinSound = null;
-let spinMusicPlayers = null;
-let lastSpinMusicIndex = -1;
 let targetAdDismissed = false;
 let pendingThemeSeed = null;
 let labelProfile = chooseLabelProfile();
@@ -1659,77 +1638,19 @@ function makeNoiseBuffer(audio, seconds) {
   return buffer;
 }
 
-function prepareSpinMusic() {
-  if (spinMusicPlayers) return spinMusicPlayers;
-  if (typeof document === "undefined") return [];
-
-  spinMusicPlayers = SPIN_MUSIC_TRACKS.map((track) => {
-    const player = document.createElement("audio");
-    player.src = track.src;
-    player.preload = "auto";
-    player.loop = true;
-    player.volume = 0;
-    return { ...track, player };
-  });
-  return spinMusicPlayers;
-}
-
-function resetMusicPlayer(player) {
-  player.pause();
-  player.volume = 0;
-  try {
-    player.currentTime = 0;
-  } catch {
-    // Some browsers cannot seek an audio element until its metadata is ready.
-  }
-}
-
-function chooseSpinMusic() {
-  const players = prepareSpinMusic();
-  if (!players.length) return null;
-
-  let index = randomInt(players.length);
-  if (players.length > 1 && index === lastSpinMusicIndex) {
-    index = (index + 1 + randomInt(players.length - 1)) % players.length;
-  }
-  lastSpinMusicIndex = index;
-  return players[index];
-}
-
 function startSpinSound(profile) {
   const audio = ensureAudio();
-  if (!state.soundOn || spinSound) return;
+  if (!audio || spinSound) return;
 
-  const music = chooseSpinMusic();
-  prepareSpinMusic().forEach(({ player }) => {
-    if (!music || player !== music.player) resetMusicPlayer(player);
-  });
-
-  const sound = {
+  spinSound = {
     kind: "clicks",
     gain: null,
     nodes: [],
-    nextPulseAt: audio ? audio.currentTime : 0,
+    nextPulseAt: audio.currentTime,
     polarity: randomUnit() < 0.5 ? -1 : 1,
     accentEvery: 3 + randomInt(5),
-    pulseCount: 0,
-    music,
-    musicStartedAt: performance.now()
+    pulseCount: 0
   };
-  spinSound = sound;
-
-  if (music) {
-    resetMusicPlayer(music.player);
-    const playAttempt = music.player.play();
-    if (playAttempt && typeof playAttempt.catch === "function") {
-      playAttempt.catch(() => {
-        if (spinSound === sound) {
-          resetMusicPlayer(music.player);
-          spinSound.music = null;
-        }
-      });
-    }
-  }
 }
 
 function playSpinBlip(kind, speed, progress) {
@@ -1784,39 +1705,26 @@ function pulseSpacing(kind, speed, progress) {
 }
 
 function updateSpinSound(speed, progress) {
-  if (!spinSound) return;
-
-  if (spinSound.music) {
-    const fadeIn = Math.min(1, (performance.now() - spinSound.musicStartedAt) / 140);
-    const fadeOut = progress < 0.94 ? 1 : Math.max(0, (1 - progress) / 0.06);
-    spinSound.music.player.volume = SPIN_MUSIC_VOLUME
-      * spinSound.music.level
-      * fadeIn
-      * fadeOut;
-  }
+  if (!spinSound || !audioContext) return;
 }
 
 function stopSpinSound() {
-  if (!spinSound) return;
+  if (!spinSound || !audioContext) return;
 
   const sound = spinSound;
-  if (sound.music) resetMusicPlayer(sound.music.player);
-
-  if (audioContext) {
-    const now = audioContext.currentTime;
-    if (sound.gain) {
-      sound.gain.gain.cancelScheduledValues(now);
-      sound.gain.gain.setValueAtTime(Math.max(sound.gain.gain.value, 0.0001), now);
-      sound.gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
-    }
-    sound.nodes.forEach((node) => {
-      try {
-        node.stop(now + 0.14);
-      } catch {
-        // The node may already have been stopped by a short one-shot profile.
-      }
-    });
+  const now = audioContext.currentTime;
+  if (sound.gain) {
+    sound.gain.gain.cancelScheduledValues(now);
+    sound.gain.gain.setValueAtTime(Math.max(sound.gain.gain.value, 0.0001), now);
+    sound.gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
   }
+  sound.nodes.forEach((node) => {
+    try {
+      node.stop(now + 0.14);
+    } catch {
+      // The node may already have been stopped by a short one-shot profile.
+    }
+  });
   spinSound = null;
 }
 
@@ -2825,9 +2733,9 @@ function undoPick() {
 
 function toggleSound() {
   state.soundOn = !state.soundOn;
-  if (!state.soundOn) {
+  if (!state.soundOn && audioContext) {
     stopSpinSound();
-    if (audioContext) audioContext.suspend();
+    audioContext.suspend();
   }
   render();
 }
@@ -2873,6 +2781,5 @@ document.addEventListener("keydown", (event) => {
 window.addEventListener("resize", fitCanvas);
 
 loadState();
-prepareSpinMusic();
 fitCanvas();
 render();
