@@ -168,27 +168,178 @@ const themeKeys = [
   "overlay-third"
 ];
 
+function colorWithAlpha(hex, alpha) {
+  const value = Number.parseInt(hex.replace("#", ""), 16);
+  const red = (value >> 16) & 255;
+  const green = (value >> 8) & 255;
+  const blue = value & 255;
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+}
+
+function makeAppTheme(name, palette, wheel) {
+  return {
+    name,
+    vars: [
+      palette.lime,
+      palette.plum,
+      palette.aqua,
+      palette.yellow,
+      palette.blue,
+      palette.red,
+      palette.page,
+      ...palette.background,
+      palette.green,
+      palette.plum,
+      palette.cream,
+      "rgba(255, 255, 255, 0.24)",
+      colorWithAlpha(palette.plum, 0.24),
+      colorWithAlpha(palette.deep, 0.44),
+      palette.aquaLight,
+      palette.red,
+      palette.yellow,
+      palette.lime,
+      palette.blue,
+      palette.plum,
+      palette.pink,
+      ...palette.panel,
+      palette.deep,
+      palette.badgeText,
+      ...palette.spin,
+      ...palette.canvas,
+      palette.winner,
+      palette.yellow,
+      palette.green,
+      palette.status,
+      palette.green,
+      palette.cream,
+      palette.pink,
+      palette.aquaLight,
+      palette.yellow,
+      palette.pink,
+      palette.lime,
+      palette.lavender,
+      ...palette.overlay
+    ],
+    wheel
+  };
+}
+
 const appThemes = [
-  {
-    vars: ["#c6d96f", "#b34a7d", "#88c7c2", "#eadb67", "#4b62a3", "#c45532", "#b9c58e", "#9e8c91", "#d4b153", "#4f8a7b", "#7fb083", "#b34a7d", "#efe278", "rgba(255, 255, 255, 0.28)", "rgba(155, 98, 138, 0.24)", "rgba(105, 145, 95, 0.55)", "#d8cc72", "#cf663c", "#eadb67", "#c6d96f", "#4b62a3", "#b34a7d", "#c7d98a", "#d98dbb", "#9ecc92", "#eadb67", "#50396d", "#f7f0b0", "#b7382e", "#e6ce58", "#4f8a7b", "#8d74b7", "#c997b3", "#c997b3", "#e5d575", "#9eb77f", "#79b5bd", "#8d74b7", "#d77855", "#4b62a3", "#eadb67", "#88b37f", "#e9d871", "#87a76e", "#eadb67", "#c7799e", "#b7d0cf", "#eadb67", "#d9a1b7", "#cbd889", "#d7c0e5", "#d7c0e5", "#eadb67", "#b34a7d", "#7fb8b2", "#c45532"],
-    wheel: ["#c45532", "#e7d46f", "#8fbd76", "#5d78aa", "#bc7ca0", "#b88347", "#82b9b1", "#c6cf82", "#7f6aa4", "#e1adc0", "#587d66", "#d59d7a"]
-  },
-  {
-    vars: ["#e2c365", "#7a516d", "#7db9c7", "#d2ea8e", "#39455f", "#9d6542", "#cbc2a2", "#8ea1a4", "#d6b470", "#b9a0c1", "#b88952", "#7d4d77", "#d7eca3", "rgba(40, 35, 50, 0.10)", "rgba(128, 79, 112, 0.23)", "rgba(119, 84, 47, 0.42)", "#a7c6cb", "#7d405b", "#d8ec8f", "#d7a752", "#3f5c70", "#bd8eaf", "#e5bf79", "#a7c1de", "#c4b578", "#b17986", "#5d473f", "#f3e8a6", "#6d8e9a", "#d7b557", "#b48faa", "#9b7144", "#d4e8ad", "#c1a1bd", "#e0c472", "#7f9f8e", "#8ab7c1", "#b48faa", "#a76d4a", "#7e596f", "#e2d682", "#9bbbb7", "#d7ca86", "#ac8260", "#d3c47c", "#9bb9d2", "#b9cbbc", "#d8ca70", "#b792ad", "#d3dfa4", "#a7c2c9", "#c3b0d5", "#d7c471", "#85506e", "#8bb6be", "#a86f4d"],
-    wheel: ["#6d8e9a", "#d7b557", "#b48faa", "#9b7144", "#d4e8ad", "#8ab7c1", "#c47763", "#798c57", "#dbc590", "#9f6d95"]
-  },
-  {
-    vars: ["#d4a835", "#885f99", "#abcbd0", "#f0dba0", "#45516f", "#bd6745", "#d6c0a8", "#c89b82", "#9fb782", "#6d8d9e", "#c78d72", "#916096", "#f1dfa6", "rgba(255, 255, 255, 0.18)", "rgba(94, 66, 120, 0.26)", "rgba(122, 80, 56, 0.39)", "#ead3b4", "#bd6745", "#d4a835", "#b3c97a", "#4b6381", "#8b6aa4", "#c9b767", "#d5a2ba", "#b5c7a0", "#c8a75c", "#3f4b68", "#f4e5b0", "#bd6745", "#d6bd6b", "#6d8d9e", "#8b6aa4", "#d5a2ba", "#d2a9bd", "#e1c771", "#b0bf8f", "#9dc7c6", "#8d76a9", "#c98160", "#45516f", "#d4a835", "#93b39b", "#ead777", "#c78860", "#e0cd79", "#c58daa", "#c5d2b8", "#ead777", "#d5a2ba", "#c8d37e", "#c3d6d9", "#d2bed8", "#cdbed0", "#e5c66d", "#8b6aa4", "#9dc7c6", "#bd6745"],
-    wheel: ["#bd6745", "#ead777", "#93b39b", "#45516f", "#c58daa", "#c78860", "#9dc7c6", "#8b6aa4", "#c8d37e", "#d2bed8"]
-  },
-  {
-    vars: ["#b9cf91", "#a44d54", "#8eb4b0", "#f0c766", "#243e5d", "#db8357", "#aebba8", "#765d6d", "#c9d29a", "#d08b72", "#8f7845", "#a44d54", "#f5d88a", "rgba(0, 0, 0, 0.08)", "rgba(62, 86, 119, 0.2)", "rgba(75, 91, 62, 0.48)", "#d8b8c1", "#a44d54", "#f0c766", "#b9cf91", "#243e5d", "#8b6d9b", "#b4c374", "#dcb4a1", "#b8cbbb", "#da9e61", "#243e5d", "#f6e6b5", "#8e6f59", "#f0c766", "#8eb4b0", "#ba7a9a", "#dcb4a1", "#ba7a9a", "#f0c766", "#aebf88", "#8eb4b0", "#8b6d9b", "#db8357", "#243e5d", "#f0c766", "#b4c374", "#e8d184", "#8eb4b0", "#f0c766", "#dcb4a1", "#c5d0c1", "#e8d184", "#d8b8c1", "#c9d29a", "#bfd8d4", "#cdb8dc", "#d8b8c1", "#f0c766", "#a44d54", "#8eb4b0", "#db8357"],
-    wheel: ["#f0c766", "#243e5d", "#dcb4a1", "#8eb4b0", "#a44d54", "#c9d29a", "#8b6d9b", "#db8357", "#aebba8", "#8e6f59"]
-  },
-  {
-    vars: ["#ccd8a1", "#8f5c7d", "#9cc0bd", "#e0bd57", "#59607e", "#a34e38", "#dad0b2", "#b5a085", "#8fae9b", "#caa8be", "#9a9f6b", "#7e5274", "#e8d36e", "rgba(255,255,255,0.20)", "rgba(94, 64, 72, 0.23)", "rgba(96, 102, 66, 0.52)", "#c9bfdc", "#a34e38", "#e0bd57", "#ccd8a1", "#59607e", "#8f5c7d", "#d7c17c", "#b6c3df", "#d6a2a2", "#9cc0bd", "#4e5065", "#f1e6bd", "#a34e38", "#ccd8a1", "#9cc0bd", "#8f5c7d", "#e0bd57", "#b6c3df", "#d7c17c", "#a8bd8d", "#9cc0bd", "#8f5c7d", "#a34e38", "#4e5065", "#e0bd57", "#9cc0bd", "#e4cf79", "#8fae9b", "#d7c17c", "#d6a2a2", "#c6d0bd", "#e4cf79", "#d6a2a2", "#ccd8a1", "#c1d7d3", "#c9bfdc", "#d6a2a2", "#e0bd57", "#8f5c7d", "#9cc0bd", "#a34e38"],
-    wheel: ["#a34e38", "#e0bd57", "#9cc0bd", "#59607e", "#ccd8a1", "#8f5c7d", "#d6a2a2", "#8fae9b", "#b6c3df", "#d7c17c"]
-  }
+  makeAppTheme("lavender taxi", {
+    lime: "#c9d76a",
+    plum: "#70418a",
+    aqua: "#55aaa8",
+    yellow: "#e1b83f",
+    blue: "#3454a4",
+    red: "#c94632",
+    page: "#d7c3e6",
+    background: ["#8b6aa6", "#d99f32", "#53968d"],
+    green: "#52735b",
+    cream: "#f3e4a6",
+    deep: "#29213f",
+    aquaLight: "#9ad3cf",
+    pink: "#e68fb0",
+    panel: ["#9fc8d8", "#e5ae62", "#6d4c91"],
+    badgeText: "#fff0ac",
+    spin: ["#8e2928", "#6f4b10", "#176068", "#343172", "#702655"],
+    canvas: ["#d58ca9", "#d5a53d", "#8ebfbe", "#7289c0", "#79588d", "#df7959"],
+    winner: "#3957a1",
+    status: "#d3b34b",
+    lavender: "#bca7d6",
+    overlay: ["#b99bd0", "#e4bf55", "#6c3c85", "#91cbc6", "#dc8265"]
+  }, ["#c94f38", "#e1b83f", "#55aaa8", "#3454a4", "#e68fb0", "#df7959", "#52735b", "#c9d76a", "#70418a", "#7289c0", "#9ad3cf", "#dc8265"]),
+  makeAppTheme("municipal pool", {
+    lime: "#a7c98c",
+    plum: "#733f3f",
+    aqua: "#2f91a6",
+    yellow: "#e6cb6a",
+    blue: "#316b93",
+    red: "#b94e39",
+    page: "#b9ddd5",
+    background: ["#2d7e87", "#c27a4e", "#87ad8c"],
+    green: "#477762",
+    cream: "#f2e6b7",
+    deep: "#263f43",
+    aquaLight: "#91d1c8",
+    pink: "#d88a7f",
+    panel: ["#df9a78", "#8fc8bc", "#315f6b"],
+    badgeText: "#f7edc3",
+    spin: ["#78352b", "#255d66", "#36583b", "#7a4e15", "#613c54"],
+    canvas: ["#e19975", "#3e8da0", "#e0c25a", "#71ad93", "#536fa0", "#c96f61"],
+    winner: "#286f83",
+    status: "#e0bd58",
+    lavender: "#aaa0c2",
+    overlay: ["#7db8b2", "#eccb72", "#7f493f", "#a2d6ce", "#df9075"]
+  }, ["#c85d42", "#e0c55d", "#45a0b0", "#76aa8a", "#466f9e", "#da9075", "#8ccfc2", "#9dbd75", "#84595e", "#d0a14d", "#559285", "#d97b66"]),
+  makeAppTheme("apricot terminal", {
+    lime: "#b7ca68",
+    plum: "#6d477b",
+    aqua: "#50899d",
+    yellow: "#d9b548",
+    blue: "#3f6388",
+    red: "#bd554e",
+    page: "#efc5a5",
+    background: ["#74527e", "#9a983e", "#4a788b"],
+    green: "#687d46",
+    cream: "#f5dfb9",
+    deep: "#35293d",
+    aquaLight: "#a6c9c1",
+    pink: "#d78c9f",
+    panel: ["#c9cf89", "#d892a4", "#714f81"],
+    badgeText: "#f8e4b8",
+    spin: ["#6f3554", "#394f72", "#60641f", "#873b36", "#5d3d6d"],
+    canvas: ["#d88f73", "#b1bd5d", "#6e91a6", "#d5889b", "#7b5b91", "#d0a247"],
+    winner: "#496781",
+    status: "#b9a342",
+    lavender: "#bca6cc",
+    overlay: ["#c1a2c8", "#e2bb57", "#6d477b", "#99bdba", "#df8f74"]
+  }, ["#bd554e", "#d9b548", "#6e91a6", "#b7ca68", "#6d477b", "#d78c9f", "#687d46", "#d88f73", "#50899d", "#c9cf89", "#9c684d", "#bca6cc"]),
+  makeAppTheme("blueprint custard", {
+    lime: "#9dbc75",
+    plum: "#74506c",
+    aqua: "#6797aa",
+    yellow: "#d8bc59",
+    blue: "#3f5985",
+    red: "#b9503a",
+    page: "#eadc9e",
+    background: ["#53698d", "#b76b48", "#a16d83"],
+    green: "#5a7357",
+    cream: "#f2e9c9",
+    deep: "#262e45",
+    aquaLight: "#a9cbd3",
+    pink: "#d28ba0",
+    panel: ["#9ebed2", "#d77859", "#405f8b"],
+    badgeText: "#fff0bd",
+    spin: ["#334970", "#783827", "#4a6349", "#6b3e5f", "#785917"],
+    canvas: ["#8fb0cb", "#d06f53", "#d6b755", "#9d7187", "#5a7998", "#c78f6b"],
+    winner: "#405988",
+    status: "#d7ba56",
+    lavender: "#b6a1c5",
+    overlay: ["#a595bd", "#dfc66d", "#74506c", "#9bc4cd", "#d67c62"]
+  }, ["#3f5985", "#d8bc59", "#b9503a", "#6797aa", "#9dbc75", "#d28ba0", "#5a7357", "#c78f6b", "#74506c", "#8fb0cb", "#d06f53", "#b6a1c5"]),
+  makeAppTheme("salmon archive", {
+    lime: "#a8c978",
+    plum: "#655283",
+    aqua: "#4f8f8b",
+    yellow: "#d5ad3f",
+    blue: "#45617d",
+    red: "#b94c44",
+    page: "#e1a49a",
+    background: ["#397371", "#8f79a8", "#b18c39"],
+    green: "#53765a",
+    cream: "#f0ddb9",
+    deep: "#2e3541",
+    aquaLight: "#9fc9b7",
+    pink: "#c783a3",
+    panel: ["#a9cdb1", "#b9a8cf", "#8f514c"],
+    badgeText: "#f6e7c0",
+    spin: ["#773330", "#365f5d", "#634c78", "#765a16", "#69384f"],
+    canvas: ["#c97f75", "#63a09a", "#aa92bf", "#d0a84d", "#7ea982", "#b9655d"],
+    winner: "#356b69",
+    status: "#caa543",
+    lavender: "#baa6cf",
+    overlay: ["#b599c4", "#dfb95a", "#655283", "#a6cbb8", "#cd766c"]
+  }, ["#b94c44", "#d5ad3f", "#4f8f8b", "#655283", "#a8c978", "#c783a3", "#53765a", "#c97f75", "#45617d", "#aa92bf", "#63a09a", "#cd766c"])
 ];
 
 let activeWheelColors = wheelColors.slice();
@@ -1091,6 +1242,7 @@ function startRemovalAnimation(winnerName, themeSeed, intensity = 0) {
   removalRunId = runId;
   isRemoving = true;
   render();
+  playSliceGulp(intensity);
 
   let startTime = null;
   function frame(timestamp) {
@@ -1886,26 +2038,220 @@ function playGlitchPop(intensity = 0.5, slowdown = 1) {
   }
 }
 
+function playRecordScratch(intensity = 0.5, slowdown = 1) {
+  const audio = ensureAudio();
+  if (!audio) return;
+
+  const now = audio.currentTime;
+  const pitchScale = slowdownPitchScale(slowdown);
+  const timeScale = Math.min(2.2, slowdownTimeScale(slowdown));
+  const duration = 0.24 * timeScale;
+  const noise = audio.createBufferSource();
+  const filter = audio.createBiquadFilter();
+  const gain = audio.createGain();
+
+  noise.buffer = makeNoiseBuffer(audio, duration);
+  filter.type = "bandpass";
+  filter.frequency.setValueAtTime(2600 * pitchScale, now);
+  filter.frequency.exponentialRampToValueAtTime(180 * pitchScale, now + duration);
+  filter.Q.setValueAtTime(4.8, now);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.045 + intensity * 0.025, now + 0.012 * timeScale);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+  noise.connect(filter).connect(gain).connect(audio.destination);
+  noise.start(now);
+  noise.stop(now + duration + 0.02);
+}
+
+function playWompWomp(intensity = 0.5, slowdown = 1) {
+  const audio = ensureAudio();
+  if (!audio) return;
+
+  const now = audio.currentTime;
+  const pitchScale = slowdownPitchScale(slowdown);
+  const timeScale = Math.min(2.5, slowdownTimeScale(slowdown));
+
+  [205, 164].forEach((frequency, index) => {
+    const start = now + index * 0.145 * timeScale;
+    const osc = audio.createOscillator();
+    const gain = audio.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(frequency * (1 + intensity * 0.12) * pitchScale, start);
+    osc.frequency.exponentialRampToValueAtTime(frequency * 0.42 * pitchScale, start + 0.18 * timeScale);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(0.045 + intensity * 0.025, start + 0.015 * timeScale);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.2 * timeScale);
+    osc.connect(gain).connect(audio.destination);
+    osc.start(start);
+    osc.stop(start + 0.22 * timeScale);
+  });
+}
+
+function playSpringTwang(intensity = 0.5, slowdown = 1) {
+  const audio = ensureAudio();
+  if (!audio) return;
+
+  const now = audio.currentTime;
+  const pitchScale = slowdownPitchScale(slowdown);
+  const timeScale = Math.min(2.4, slowdownTimeScale(slowdown));
+  const osc = audio.createOscillator();
+  const gain = audio.createGain();
+
+  osc.type = "triangle";
+  osc.frequency.setValueAtTime((720 + intensity * 220) * pitchScale, now);
+  osc.frequency.exponentialRampToValueAtTime(135 * pitchScale, now + 0.09 * timeScale);
+  osc.frequency.exponentialRampToValueAtTime(310 * pitchScale, now + 0.16 * timeScale);
+  osc.frequency.exponentialRampToValueAtTime(92 * pitchScale, now + 0.3 * timeScale);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.065 + intensity * 0.025, now + 0.008 * timeScale);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.32 * timeScale);
+
+  osc.connect(gain).connect(audio.destination);
+  osc.start(now);
+  osc.stop(now + 0.34 * timeScale);
+}
+
+function playRetroError(intensity = 0.5, slowdown = 1) {
+  const audio = ensureAudio();
+  if (!audio) return;
+
+  const now = audio.currentTime;
+  const pitchScale = slowdownPitchScale(slowdown);
+  const timeScale = Math.min(2, slowdownTimeScale(slowdown));
+  const frequencies = [460, 230, 154];
+
+  frequencies.forEach((frequency, index) => {
+    const start = now + index * 0.072 * timeScale;
+    const osc = audio.createOscillator();
+    const gain = audio.createGain();
+    osc.type = "square";
+    osc.frequency.setValueAtTime(frequency * (1 + intensity * 0.08) * pitchScale, start);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(0.035 + intensity * 0.022, start + 0.006 * timeScale);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.055 * timeScale);
+    osc.connect(gain).connect(audio.destination);
+    osc.start(start);
+    osc.stop(start + 0.065 * timeScale);
+  });
+}
+
+function playSuspenseRattle(intensity = 0.5, slowdown = 1) {
+  const audio = ensureAudio();
+  if (!audio) return;
+
+  const now = audio.currentTime;
+  const timeScale = Math.min(2.2, slowdownTimeScale(slowdown));
+  const buffer = makeNoiseBuffer(audio, 0.035 * timeScale);
+
+  for (let index = 0; index < 5; index += 1) {
+    const start = now + index * 0.052 * timeScale;
+    const noise = audio.createBufferSource();
+    const filter = audio.createBiquadFilter();
+    const gain = audio.createGain();
+    noise.buffer = buffer;
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(720 + index * 130, start);
+    filter.Q.setValueAtTime(3.5, start);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(0.018 + intensity * 0.016, start + 0.004 * timeScale);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.032 * timeScale);
+    noise.connect(filter).connect(gain).connect(audio.destination);
+    noise.start(start);
+    noise.stop(start + 0.04 * timeScale);
+  }
+}
+
+function playSliceGulp(intensity = 0.5) {
+  const audio = ensureAudio();
+  if (!audio) return;
+
+  const now = audio.currentTime;
+  const osc = audio.createOscillator();
+  const gain = audio.createGain();
+  const filter = audio.createBiquadFilter();
+
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(310 + intensity * 90, now);
+  osc.frequency.exponentialRampToValueAtTime(62, now + 0.25);
+  filter.type = "lowpass";
+  filter.frequency.setValueAtTime(900, now);
+  filter.frequency.exponentialRampToValueAtTime(180, now + 0.24);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.06 + intensity * 0.025, now + 0.012);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.27);
+
+  osc.connect(filter).connect(gain).connect(audio.destination);
+  osc.start(now);
+  osc.stop(now + 0.29);
+}
+
+function playCueFrom(choices, intensity, slowdown) {
+  choices[randomInt(choices.length)](intensity, slowdown);
+}
+
 function playFakeoutCue(profile, cue = "start", kind = "nudge", slowdown = 1) {
   if (profile.openingNormal) return;
   const intensity = profile.intensity || 0;
   if (cue === "hold") {
-    if (randomUnit() < 0.22) playGlitchPop(intensity * 0.45, slowdown);
+    if (randomUnit() < 0.42) {
+      playCueFrom(
+        [playSuspenseRattle, playGlitchPop, playRetroError],
+        intensity * 0.45,
+        slowdown
+      );
+    }
     return;
   }
 
   if (kind === "pointer") {
-    (randomUnit() < 0.62 ? playDoorCreak : playArcadeSlide)(intensity, slowdown);
+    playCueFrom(
+      [playDoorCreak, playDoorCreak, playRecordScratch, playRetroError],
+      intensity,
+      slowdown
+    );
   } else if (kind === "bounce") {
-    playBoing(intensity, slowdown);
+    playCueFrom(
+      [playBoing, playBoing, playSpringTwang, playWompWomp],
+      intensity,
+      slowdown
+    );
   } else if (kind === "swap") {
-    playGlitchPop(intensity + 0.2, slowdown);
+    playCueFrom(
+      [playGlitchPop, playGlitchPop, playRetroError, playRecordScratch],
+      intensity + 0.2,
+      slowdown
+    );
   } else if (kind === "droop") {
-    playDoorCreak(intensity + 0.12, slowdown);
+    playCueFrom(
+      [playDoorCreak, playDoorCreak, playWompWomp, playRecordScratch],
+      intensity + 0.12,
+      slowdown
+    );
   } else if (kind === "elastic") {
-    playBoing(intensity + 0.18, slowdown);
+    playCueFrom(
+      [playBoing, playBoing, playSpringTwang, playSpringTwang, playGlitchPop],
+      intensity + 0.18,
+      slowdown
+    );
   } else {
-    (randomUnit() < 0.68 ? playArcadeSlide : playGlitchPop)(intensity, slowdown);
+    playCueFrom(
+      [playArcadeSlide, playArcadeSlide, playGlitchPop, playRecordScratch, playSpringTwang],
+      intensity,
+      slowdown
+    );
+  }
+}
+
+function playWinnerSting(profile = null) {
+  const roll = randomUnit();
+  const intensity = profile?.intensity || 0;
+  if (roll < 0.62) {
+    playTinyCheer();
+  } else if (roll < 0.88) {
+    playArcadeSlide(0.35 + intensity * 0.25, 1);
+  } else {
+    playWompWomp(0.3 + intensity * 0.2, 1);
   }
 }
 
@@ -2305,7 +2651,9 @@ function fakeCrash() {
   document.body.append(crash);
   crashOverlay = crash;
   playGlitchPop(1);
-  setTimeout(() => playDoorCreak(0.9), 120);
+  setTimeout(() => {
+    playCueFrom([playDoorCreak, playRetroError, playWompWomp], 0.9, 1);
+  }, 120);
 }
 
 function hideResultOverlay() {
@@ -2471,6 +2819,9 @@ function spin() {
   const endRotation = startRotation + forwardToTarget + profile.extraSpins * TAU;
   const totalDelta = endRotation - startRotation;
   const duration = profile.duration;
+  const isFinalSpin = remaining.length === 1;
+  const finalSpinTickAngle = TAU / 8;
+  let lastFinalSpinTickIndex = 0;
   let pointerDelta = 0;
 
   if (profile.pointerTrick) {
@@ -2648,14 +2999,24 @@ function spin() {
     drawWheel(currentWheelNames, state.rotation, drawSlices, activeSwapAnimation);
 
     const indexAtPointer = pointerIndexForCurrentWheel(state.rotation, pointerAngle, drawSlices);
-    if (indexAtPointer !== lastPointerIndex) {
-      const inTerminalTickWindow = progress >= 0.992 || elapsed >= duration - 140;
-      if (!inTerminalTickWindow && speed > 0.08 && timestamp - lastTickAt > 18) {
-        playTick(speed);
-        lastTickAt = timestamp;
-      }
-      lastPointerIndex = indexAtPointer;
+    const finalSpinTickIndex = Math.floor(
+      Math.abs(rotation - startRotation) / finalSpinTickAngle
+    );
+    const crossedSliceBoundary = indexAtPointer !== lastPointerIndex;
+    const crossedFinalSpinSpoke = isFinalSpin
+      && finalSpinTickIndex !== lastFinalSpinTickIndex;
+    const inTerminalTickWindow = progress >= 0.992 || elapsed >= duration - 140;
+    if (
+      (crossedSliceBoundary || crossedFinalSpinSpoke)
+      && !inTerminalTickWindow
+      && speed > 0.08
+      && timestamp - lastTickAt > 18
+    ) {
+      playTick(speed);
+      lastTickAt = timestamp;
     }
+    lastPointerIndex = indexAtPointer;
+    lastFinalSpinTickIndex = finalSpinTickIndex;
 
     previousRotation = rotation;
     previousFrameTime = timestamp;
@@ -2689,7 +3050,7 @@ function finishSpin(winner, wheelNames, profile = null) {
 
   stopSpinSound();
   playClack();
-  setTimeout(playTinyCheer, 80);
+  setTimeout(() => playWinnerSting(profile), 80);
   showResultOverlay(winner);
   render();
 }
